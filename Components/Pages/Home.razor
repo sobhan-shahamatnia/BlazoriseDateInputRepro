@@ -1,0 +1,67 @@
+@page "/"
+
+<PageTitle>Blazorise DateInput repro</PageTitle>
+
+<div class="container py-4" style="max-width: 960px">
+    <h1 class="h3">Blazorise <code>DateInput</code>: typing a leading zero resets the date</h1>
+
+    <p>
+        Every field starts at 15 March 2030. Click the <em>first</em> segment of a field and type the digits without
+        separators. Reload the page before each attempt.
+    </p>
+    <ul>
+        <li>dd.MM.yyyy locale (e.g. de-DE): type <kbd>02052030</kbd>, expected <strong>2030-05-02</strong></li>
+        <li>MM/dd/yyyy locale (e.g. en-US): type <kbd>01052030</kbd>, expected <strong>2030-01-05</strong></li>
+    </ul>
+    <p>
+        Rows 1 and 2 end with a different date than typed; row 3 gets it right.
+    </p>
+
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th style="width: 40%">Input</th>
+                <th>Field</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>1. Blazorise <code>DateInput&lt;DateOnly&gt;</code></strong><br />
+                    <small class="text-danger">bug</small>
+                </td>
+                <td><DateInput id="blazorise-dateonly" TValue="DateOnly" @bind-Value="dateOnly" InputMode="DateInputMode.Date" /></td>
+                <td><code id="blazorise-dateonly-value">@dateOnly.ToString( "yyyy-MM-dd" )</code></td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>2. Blazorise <code>DateInput&lt;DateOnly?&gt;</code></strong><br />
+                    <small class="text-danger">bug</small>
+                </td>
+                <td><DateInput id="blazorise-nullable" TValue="DateOnly?" @bind-Value="nullableDateOnly" InputMode="DateInputMode.Date" /></td>
+                <td><code id="blazorise-nullable-value">@(nullableDateOnly?.ToString( "yyyy-MM-dd" ) ?? "null")</code></td>
+            </tr>
+            <tr>
+                <td>
+                    <strong>3. Plain <code>&lt;input type="date"&gt;</code>, no Blazor binding</strong><br />
+                    <small class="text-success">control: the browser handles the same keystrokes correctly</small>
+                </td>
+                <td><input id="plain" type="date" class="form-control" value="2030-03-15" onchange="document.getElementById('plain-value').textContent = this.value || '(incomplete)'" /></td>
+                <td><code id="plain-value">2030-03-15</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2 class="h5">Programmatic writes to <code>&lt;input type="date"&gt;.value</code></h2>
+    <p class="small text-muted">
+        Logged by <code>wwwroot/value-write-log.js</code>. Every write while the user is typing resets the browser's
+        in-progress segment input. Rows 1 and 2 cause writes while typing, row 3 does not.
+    </p>
+    <pre id="value-write-log" class="border rounded p-2 bg-light small" style="min-height: 8rem"></pre>
+</div>
+
+@code {
+    private DateOnly dateOnly = new( 2030, 3, 15 );
+    private DateOnly? nullableDateOnly = new DateOnly( 2030, 3, 15 );
+}
